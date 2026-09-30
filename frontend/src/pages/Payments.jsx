@@ -1,29 +1,62 @@
 import { Search, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+    getPayments,
+    getPaymentSummary
+} from "../services/paymentService";
 
 export default function Payments() {
-  const payments = [
-    {
-      receipt: "RCPT-001",
-      customer: "Musa Bello",
-      amount: "₦2,500,000",
-      date: "10 Jun 2026",
-      status: "Paid",
-    },
-    {
-      receipt: "RCPT-002",
-      customer: "Sarah John",
-      amount: "₦1,000,000",
-      date: "14 Jun 2026",
-      status: "Partial",
-    },
-    {
-      receipt: "RCPT-003",
-      customer: "Aliyu Musa",
-      amount: "₦500,000",
-      date: "18 Jun 2026",
-      status: "Outstanding",
-    },
-  ];
+
+const [payments, setPayments] = useState([]);
+const [summary, setSummary] = useState({
+    total_revenue: 0,
+    active_allocations: 0,
+    outstanding_balance: 0
+});
+
+useEffect(() => {
+
+    loadPayments();
+
+    loadSummary();
+
+}, []);
+
+const loadPayments = async () => {
+
+    try {
+
+        const response = await getPayments();
+
+        setPayments(response.data);
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Failed to load payments.");
+
+    }
+
+};
+
+
+const loadSummary = async () => {
+
+    try {
+
+        const response =
+            await getPaymentSummary();
+
+        setSummary(response.data);
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+};
 
   return (
     <div className="space-y-6">
@@ -50,18 +83,20 @@ export default function Payments() {
             Total Revenue
           </p>
 
-          <h2 className="text-3xl font-bold mt-2">
-            ₦750M
-          </h2>
+            <h2 className="text-3xl font-bold mt-2">
+
+                ₦{Number(summary.total_revenue).toLocaleString()}
+
+            </h2>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <p className="text-slate-500 text-sm">
-            Payments This Month
+              Active Allocations
           </p>
 
           <h2 className="text-3xl font-bold mt-2">
-            ₦85M
+              {summary.active_allocations}
           </h2>
         </div>
 
@@ -71,7 +106,7 @@ export default function Payments() {
           </p>
 
           <h2 className="text-3xl font-bold mt-2 text-red-600">
-            ₦12M
+                ₦{Number(summary.outstanding_balance || 0).toLocaleString()}
           </h2>
         </div>
 
@@ -137,46 +172,52 @@ export default function Payments() {
             </thead>
 
             <tbody>
+                {payments.map((item) => (
 
-              {payments.map((item, index) => (
-
-                <tr
-                  key={index}
-                  className="border-t"
-                >
-
-                  <td className="px-6 py-4">
-                    {item.receipt}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {item.customer}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {item.amount}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {item.date}
-                  </td>
-
-                  <td className="px-6 py-4">
-
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm
-                      ${
-                        item.status === "Paid"
-                          ? "bg-green-100 text-green-700"
-                          : item.status === "Partial"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                    <tr
+                        key={item.payment_id}
+                        className="border-t"
                     >
-                      {item.status}
-                    </span>
 
+                  <td className="px-6 py-4">
+                    {item.receipt_number}
                   </td>
+
+                  <td className="px-6 py-4">
+                    {item.full_name}
+                  </td>
+
+                  <td className="px-6 py-4">
+                    ₦{Number(item.amount_paid).toLocaleString()}
+                  </td>
+
+                  <td className="px-6 py-4">
+                    {new Date(item.payment_date).toLocaleDateString()}
+                  </td>
+
+                <td className="px-6 py-4">
+
+                  <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium
+                      ${
+                          item.payment_status === "PAID"
+                              ? "bg-green-100 text-green-700"
+                              : item.payment_status === "PART_PAYMENT"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
+                      }`}
+                  >
+                      {
+                          item.payment_status === "PAID"
+                              ? "Paid"
+                              : item.payment_status === "PART_PAYMENT"
+                              ? "Part Payment"
+                              : "Pending"
+                      }
+                  </span>
+
+              </td>
+                  
 
                   <td className="px-6 py-4 flex gap-2">
 

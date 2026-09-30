@@ -379,3 +379,24 @@ export const markPlotAvailable = async (
     );
 
 };
+
+
+
+/* ==========================================================
+   CHECK IF ALLOCATION HAS PAYMENTS
+========================================================== */
+
+export const allocationHasPayments = async (allocationId) => {
+
+    const result = await pool.query(
+        `
+        SELECT COUNT(*) AS payment_count
+        FROM postgres.payments
+        WHERE allocation_id = $1
+        `,
+        [allocationId]
+    );
+
+    return Number(result.rows[0].payment_count);
+
+};

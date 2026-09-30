@@ -257,3 +257,47 @@ export const deletePayment = async (
     return true;
 
 };
+
+
+
+/* ==========================================================
+   PAYMENT DASHBOARD KPI
+========================================================== */
+
+export const getPaymentSummary = async () => {
+
+    const result = await pool.query(
+        `
+        SELECT
+
+            COALESCE(SUM(amount_paid), 0) AS total_revenue,
+            (
+                SELECT COUNT(*)
+                FROM postgres.plot_allocations
+                WHERE allocation_status = 'ACTIVE'
+            ) AS active_allocations,
+
+            (
+                SELECT
+                    COALESCE(
+                        SUM(pa.purchase_amount) -
+                        COALESCE(
+                            (
+                                SELECT SUM(amount_paid)
+                                FROM postgres.payments
+                            ),
+                            0
+                        ),
+                        0
+                    )
+                FROM postgres.plot_allocations pa
+                WHERE pa.allocation_status = 'ACTIVE'
+            ) AS outstanding_balance
+
+        FROM postgres.payments;
+        `
+    );
+
+    return result.rows[0];
+
+};

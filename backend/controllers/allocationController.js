@@ -5,7 +5,8 @@ import {
     updateAllocation,
     cancelAllocation,
     markPlotSold,
-    markPlotAvailable
+    markPlotAvailable,
+    allocationHasPayments
 } from "../models/allocationModel.js";
 
 
@@ -144,6 +145,54 @@ export const fetchAllocation = async (req, res) => {
 
 
 
+/* ======================================================
+   UPDATE ALLOCATION
+====================================================== */
+
+export const editAllocation = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+        const {
+            purchase_amount,
+            payment_plan
+        } = req.body;
+
+        const allocation =
+            await updateAllocation(
+
+                id,
+                purchase_amount,
+                payment_plan,
+                req.user.user_id
+
+            );
+
+        res.status(200).json({
+
+            success: true,
+            message: "Allocation updated successfully",
+            data: allocation
+
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+
+            success: false,
+            message: error.message
+
+        });
+
+    }
+
+};
+
+
+
 
 export const cancelAllocationController = async (req, res) => {
 
@@ -153,11 +202,33 @@ export const cancelAllocationController = async (req, res) => {
 
         console.log("Controller started");
 
+        // ==========================================
+        // CHECK IF PAYMENTS EXIST
+        // ==========================================
+
+        const paymentCount = await allocationHasPayments(id);
+
+        if (paymentCount > 0) {
+
+            return res.status(400).json({
+
+                success: false,
+                message:
+                    "This allocation cannot be cancelled because payments already exist."
+
+            });
+
+        }
+
+        // ==========================================
+        // CANCEL ALLOCATION
+        // ==========================================
+
         await cancelAllocation(id);
 
-        console.log("Model finished");
+        // console.log("Model finished");
 
-        console.log("Sending response");
+        // console.log("Sending response");
 
         return res.status(200).json({
 
@@ -166,19 +237,19 @@ export const cancelAllocationController = async (req, res) => {
 
         });
 
-    }  catch (error) {
+    } catch (error) {
 
-    console.error("CONTROLLER ERROR");
-    console.error(error);
+        console.error("CONTROLLER ERROR");
+        console.error(error);
 
-    return res.status(500).json({
+        return res.status(500).json({
 
-        success: false,
-        message: error.message,
-        stack: error.stack
+            success: false,
+            message: error.message,
+            stack: error.stack
 
-    });
+        });
 
-}
+    }
 
 };

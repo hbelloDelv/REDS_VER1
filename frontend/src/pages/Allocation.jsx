@@ -235,9 +235,11 @@ const handleCancel = async (allocation) => {
 
     try {
 
-        await cancelAllocation(allocation.allocation_id);
+        const response = await cancelAllocation(
+            allocation.allocation_id
+        );
 
-        alert("Allocation cancelled successfully.");
+        alert(response.message);
 
         await loadAllocations();
 
@@ -245,7 +247,10 @@ const handleCancel = async (allocation) => {
 
         console.error(error);
 
-        alert("Failed to cancel allocation.");
+        alert(
+            error.response?.data?.message ||
+            "Failed to cancel allocation."
+        );
 
     }
 

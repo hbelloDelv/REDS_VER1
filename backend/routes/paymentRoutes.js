@@ -14,7 +14,8 @@ import {
     fetchActiveAllocations,
     recordPayment,
     editPayment,
-    removePayment
+    removePayment,
+    fetchPaymentSummary
 
 } from "../controllers/paymentController.js";
 
@@ -70,27 +71,22 @@ router.get(
 
 
 
-/* ======================================================
-   GET SINGLE PAYMENT
-====================================================== */
+/* ==========================================
+   PAYMENT SUMMARY
+========================================== */
 
 router.get(
-
-    "/:id",
-
+    "/summary",
     verifyToken,
-
     authorizeRoles(
-
         "ADMIN",
-        "SALES_REP",
-        "FINANCE"
-
+        "FINANCE",
+        "SALES_REP"
     ),
-
-    fetchPayment
-
+    fetchPaymentSummary
 );
+
+
 
 
 
@@ -117,7 +113,6 @@ router.post(
 );
 
 
-
 /* ======================================================
    UPDATE PAYMENT
 ====================================================== */
@@ -139,6 +134,30 @@ router.put(
     editPayment
 
 );
+
+
+/* ======================================================
+   GET SINGLE PAYMENT
+====================================================== */
+
+router.get(
+
+    "/:id",
+
+    verifyToken,
+
+    authorizeRoles(
+
+        "ADMIN",
+        "SALES_REP",
+        "FINANCE"
+
+    ),
+
+    fetchPayment
+
+);
+
 
 
 

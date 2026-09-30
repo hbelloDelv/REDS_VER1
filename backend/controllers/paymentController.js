@@ -5,9 +5,11 @@ import {
     getActiveAllocations,
     createPayment,
     updatePayment,
-    deletePayment
+    deletePayment,
+    getPaymentSummary
 
 } from "../models/paymentModel.js";
+
 
 
 /* ======================================================
@@ -255,6 +257,71 @@ export const removePayment = async (req, res) => {
 
             success: false,
             message: error.message
+
+        });
+
+    }
+
+};
+
+
+
+// /* ======================================================
+//    PAYMENT SUMMARY
+// ====================================================== */
+
+// export const fetchPaymentSummary = async (req, res) => {
+
+//     try {
+
+//         const summary =
+//             await getPaymentSummary();
+
+//         res.status(200).json({
+
+//             success: true,
+//             data: summary
+
+//         });
+
+//     } catch (error) {
+
+//         res.status(500).json({
+
+//             success: false,
+//             message: error.message
+
+//         });
+
+//     }
+
+// };
+
+
+export const fetchPaymentSummary = async (req, res) => {
+
+    try {
+
+        const summary =
+            await getPaymentSummary();
+
+        return res.status(200).json({
+
+            success: true,
+            data: summary
+
+        });
+
+    } catch (error) {
+
+        console.error("PAYMENT SUMMARY ERROR:");
+        console.error(error);
+
+        return res.status(500).json({
+
+            success: false,
+            message: error.message,
+            stack: error.stack
 
         });
 
